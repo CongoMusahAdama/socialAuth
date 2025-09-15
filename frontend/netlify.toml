@@ -1,10 +1,7 @@
 [build]
   base = "frontend"
-  publish = "frontend/.next"
-  command = "npm run build"
-
-[functions]
-  directory = "frontend/netlify/functions"
+  publish = "frontend/public"
+  command = "echo 'Static site ready'"
 
 [build.environment]
   NODE_VERSION = "18"
