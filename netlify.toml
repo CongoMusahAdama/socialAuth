@@ -1,9 +1,12 @@
 [build]
-  publish = "frontend/public"
-  command = "echo 'Static site ready'"
+  base = "frontend"
+  publish = "frontend/out"
+  command = "npm run build && npm run export"
 
 [build.environment]
   NODE_VERSION = "18"
+  NEXT_PUBLIC_BACKEND_URL = "https://socialauth-1tz8.onrender.com"
+  NODE_ENV = "production"
 
 # Handle client-side routing
 [[redirects]]
