@@ -11,7 +11,6 @@
     "build:production": "NODE_ENV=production next build"
   },
   "dependencies": {
-    "@next/swc-win32-x64-msvc": "^15.5.3",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -31,6 +30,6 @@
     "tailwindcss": "^3.4.17"
   },
   "optionalDependencies": {
-    "@next/swc-linux-x64-gnu": "^15.5.3"
+    "@next/swc-linux-x64-gnu": "^14.0.0"
   }
 }
