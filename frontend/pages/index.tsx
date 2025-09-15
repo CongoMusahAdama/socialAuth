@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import Head from 'next/head';
 import SocialButton from '../components/SocialButton';
 import Logo from '../components/Logo';
 import { authAPI, User } from '../lib/api';
 
 const HomePage: React.FC = () => {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
@@ -15,20 +13,26 @@ const HomePage: React.FC = () => {
     checkBackendConnection();
     
     // Check if user was redirected from signup
-    if (router.query.signup === 'success') {
+    if (typeof window !== 'undefined' && window.location.search.includes('signup=success')) {
       setShowSignupSuccess(true);
       // Hide success message after 3 seconds
       setTimeout(() => setShowSignupSuccess(false), 3000);
     }
-  }, [router.query.signup]);
+  }, []);
 
   const checkBackendConnection = async () => {
+    // Only run on client side to avoid SSR issues
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       // Check auth status without health check to avoid loading delay
       const userData = await authAPI.getMe();
       setUser(userData);
       // Redirect to profile if already logged in
-      router.push('/profile');
+      window.location.href = '/profile/';
     } catch (error) {
       console.log('❌ User not authenticated:', error);
       // User is not authenticated, stay on login page
@@ -94,7 +98,7 @@ const HomePage: React.FC = () => {
             <p className="text-gray-600">
               Don't have an account?{' '}
               <button
-                onClick={() => router.push('/signup')}
+                onClick={() => window.location.href = '/signup/'}
                 className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
                 sign up

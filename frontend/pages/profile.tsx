@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import Head from 'next/head';
 import ProfileCard from '../components/ProfileCard';
 import Logo from '../components/Logo';
 import { authAPI, User } from '../lib/api';
 
 const ProfilePage: React.FC = () => {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -15,20 +13,26 @@ const ProfilePage: React.FC = () => {
     checkAuthStatus();
     
     // Check if this is a successful login redirect
-    if (router.query.success === 'true') {
+    if (typeof window !== 'undefined' && window.location.search.includes('success=true')) {
       setShowConfetti(true);
       // Hide confetti after animation
       setTimeout(() => setShowConfetti(false), 2000);
     }
-  }, [router.query.success]);
+  }, []);
 
   const checkAuthStatus = async () => {
+    // Only run on client side to avoid SSR issues
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       const userData = await authAPI.getMe();
       setUser(userData);
     } catch (error) {
       // User is not authenticated, redirect to login
-      router.push('/');
+      window.location.href = '/';
     } finally {
       setIsLoading(false);
     }
@@ -36,7 +40,9 @@ const ProfilePage: React.FC = () => {
 
   const handleLogout = () => {
     setUser(null);
-    router.push('/');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   };
 
   // Remove loading state to prevent flash

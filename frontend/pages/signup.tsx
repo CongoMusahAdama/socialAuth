@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const SignupPage: React.FC = () => {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -30,7 +28,9 @@ const SignupPage: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Redirect to login page with success parameter
-      router.push('/?signup=success');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/?signup=success';
+      }
     } catch (error) {
       console.error('Signup failed:', error);
       setIsLoading(false);
@@ -39,7 +39,9 @@ const SignupPage: React.FC = () => {
   };
 
   const handleBackToLogin = () => {
-    router.push('/');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   };
 
   return (

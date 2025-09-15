@@ -5,6 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://socialauth-
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, // Important for httpOnly cookies
+  timeout: 10000, // 10 second timeout
 });
 
 export interface User {
