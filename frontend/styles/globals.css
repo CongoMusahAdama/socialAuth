@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .dark-card {
+    @apply bg-card-bg border border-border-light rounded-2xl shadow-2xl;
+  }
+  
+  .social-button {
+    @apply w-full py-4 px-6 rounded-xl font-semibold text-text-primary transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50;
+  }
+  
+  .tiktok-button {
+    @apply bg-gradient-to-r from-tiktok-pink to-tiktok-black hover:shadow-lg hover:shadow-tiktok-pink/25;
+  }
+  
+  .linkedin-button {
+    @apply bg-linkedin-blue hover:shadow-lg hover:shadow-linkedin-blue/25;
+  }
+  
+  .accent-button {
+    @apply bg-gradient-to-r from-accent-red to-accent-pink hover:shadow-lg hover:shadow-accent-red/25;
+  }
+  
+  .logo-pulse {
+    @apply animate-pulse-slow;
+  }
+  
+  .bounce-hover:hover {
+    @apply animate-bounce-subtle;
+  }
+  
+  .social-icon-button {
+    @apply w-12 h-12 bg-white rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg;
+  }
+}
