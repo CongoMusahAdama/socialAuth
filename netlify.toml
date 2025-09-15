@@ -1,5 +1,4 @@
 [build]
-  base = "frontend"
   publish = "frontend/public"
   command = "echo 'Static site ready'"
 
