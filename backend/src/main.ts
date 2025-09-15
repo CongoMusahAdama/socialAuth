@@ -10,7 +10,7 @@ async function bootstrap() {
   // Enable CORS for frontend
   const allowedOrigins = [
     process.env.FRONTEND_URL || 'http://localhost:3000',
-    'https://your-netlify-app.netlify.app', // Replace with your actual Netlify URL
+    'https://guglex-tapin.netlify.app', // Your actual Netlify URL
   ];
   
   app.enableCors({
