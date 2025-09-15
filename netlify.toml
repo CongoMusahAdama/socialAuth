@@ -1,18 +1,16 @@
 [build]
   base = "frontend"
-  publish = "out"
-  command = "npm install && npm run build"
+  publish = "frontend/.next"
+  command = "npm ci && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
   NEXT_PUBLIC_BACKEND_URL = "https://socialauth-1tz8.onrender.com"
   NODE_ENV = "production"
 
-# Handle client-side routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Enable Next.js SSR
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [[headers]]
   for = "/*"
