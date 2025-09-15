@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  publish = "frontend/.next"
+  publish = "frontend/out"
   command = "npm ci && npm run build"
 
 [build.environment]
@@ -8,9 +8,9 @@
   NEXT_PUBLIC_BACKEND_URL = "https://socialauth-1tz8.onrender.com"
   NODE_ENV = "production"
 
-# Enable Next.js SSR
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Static export - no SSR plugin needed
+# [[plugins]]
+#   package = "@netlify/plugin-nextjs"
 
 [[headers]]
   for = "/*"
