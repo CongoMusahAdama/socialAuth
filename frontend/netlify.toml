@@ -1,7 +1,7 @@
 [build]
   base = "frontend"
-  publish = "frontend/public"
-  command = "echo 'Static site ready'"
+  publish = "frontend/.next"
+  command = "npm run build"
 
 [functions]
   directory = "frontend/netlify/functions"
