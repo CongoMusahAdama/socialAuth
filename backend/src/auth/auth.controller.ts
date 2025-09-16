@@ -35,28 +35,50 @@ export class AuthController {
   }
 
   @Get('tiktok')
-  @UseGuards(AuthGuard('tiktok'))
-  async tiktokAuth() {
-    // This will redirect to TikTok OAuth
+  async tiktokAuth(@Res() res: Response) {
+    const clientID = process.env.TIKTOK_CLIENT_ID;
+    const redirectURI = process.env.TIKTOK_REDIRECT_URI;
+    
+    if (!clientID || !redirectURI) {
+      return res.status(500).json({ error: 'TikTok OAuth not configured' });
+    }
+
+    // Generate state for CSRF protection
+    const state = Math.random().toString(36).substring(2, 15);
+    
+    const authUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
+    authUrl.searchParams.set('client_key', clientID);
+    authUrl.searchParams.set('scope', 'user.info.basic');
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('redirect_uri', redirectURI);
+    authUrl.searchParams.set('state', state);
+
+    res.redirect(authUrl.toString());
   }
 
   @Get('tiktok/callback')
   @UseGuards(AuthGuard('tiktok'))
   async tiktokCallback(@Req() req: Request, @Res() res: Response) {
-    const user: User = req.user as User;
-    const loginResult = await this.authService.login(user);
-    
-    // Set httpOnly cookie
-    res.cookie('token', loginResult.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
+    try {
+      const user: User = req.user as User;
+      const loginResult = await this.authService.login(user);
+      
+      // Set httpOnly cookie
+      res.cookie('token', loginResult.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 1000, // 1 hour
+      });
 
-    // Redirect to frontend with success
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/profile?success=true`);
+      // Redirect to frontend with success
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/profile?success=true`);
+    } catch (error) {
+      console.error('TikTok callback error:', error);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/?error=tiktok_auth_failed`);
+    }
   }
 
   @Post('logout')

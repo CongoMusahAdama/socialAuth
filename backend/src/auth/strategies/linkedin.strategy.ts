@@ -10,6 +10,11 @@ export class LinkedInOAuthStrategy extends PassportStrategy(LinkedInStrategy, 'l
     const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
     const callbackURL = process.env.LINKEDIN_REDIRECT_URI;
 
+    console.log('🔍 LinkedIn OAuth Configuration Check:');
+    console.log('   LINKEDIN_CLIENT_ID:', clientID ? `✅ Set (${clientID.substring(0, 8)}...)` : '❌ Missing');
+    console.log('   LINKEDIN_CLIENT_SECRET:', clientSecret ? '✅ Set' : '❌ Missing');
+    console.log('   LINKEDIN_REDIRECT_URI:', callbackURL ? `✅ Set (${callbackURL})` : '❌ Missing');
+
     if (!clientID || !clientSecret || !callbackURL) {
       console.error('❌ LinkedIn OAuth configuration missing:');
       console.error('   LINKEDIN_CLIENT_ID:', clientID ? '✅ Set' : '❌ Missing');
