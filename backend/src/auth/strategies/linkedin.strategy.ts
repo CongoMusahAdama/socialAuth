@@ -25,9 +25,11 @@ export class LinkedInOAuthStrategy extends PassportStrategy(Strategy, 'linkedin'
       console.log('   LINKEDIN_CLIENT_ID:', clientID ? `✅ Set (${clientID.substring(0, 8)}...)` : '❌ Missing');
       console.log('   LINKEDIN_CLIENT_SECRET:', clientSecret ? '✅ Set' : '❌ Missing');
       console.log('   LINKEDIN_REDIRECT_URI:', redirectURI ? `✅ Set (${redirectURI})` : '❌ Missing');
+      console.log('   All env vars:', Object.keys(process.env).filter(key => key.includes('LINKEDIN')));
 
       if (!clientID || !clientSecret || !redirectURI) {
         console.error('❌ LinkedIn OAuth configuration missing');
+        console.error('Available environment variables:', Object.keys(process.env).filter(key => key.includes('LINKEDIN')));
         return this.fail('LinkedIn OAuth configuration is incomplete');
       }
 

@@ -17,10 +17,19 @@ export class AuthController {
     console.log('🔍 LinkedIn OAuth Configuration Check:');
     console.log('   LINKEDIN_CLIENT_ID:', clientID ? `✅ Set (${clientID.substring(0, 8)}...)` : '❌ Missing');
     console.log('   LINKEDIN_REDIRECT_URI:', redirectURI ? `✅ Set (${redirectURI})` : '❌ Missing');
+    console.log('   All env vars:', Object.keys(process.env).filter(key => key.includes('LINKEDIN')));
     
     if (!clientID || !redirectURI) {
       console.error('❌ LinkedIn OAuth configuration missing');
-      return res.status(500).json({ error: 'LinkedIn OAuth not configured' });
+      console.error('Available environment variables:', Object.keys(process.env).filter(key => key.includes('LINKEDIN')));
+      return res.status(500).json({ 
+        error: 'LinkedIn OAuth not configured',
+        debug: {
+          clientID: clientID ? 'Set' : 'Missing',
+          redirectURI: redirectURI ? 'Set' : 'Missing',
+          availableEnvVars: Object.keys(process.env).filter(key => key.includes('LINKEDIN'))
+        }
+      });
     }
 
     // Generate state for CSRF protection
