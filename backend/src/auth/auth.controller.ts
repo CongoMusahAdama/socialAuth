@@ -10,9 +10,31 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Get('linkedin')
-  @UseGuards(AuthGuard('linkedin'))
-  async linkedinAuth() {
-    // This will redirect to LinkedIn OAuth
+  async linkedinAuth(@Res() res: Response) {
+    const clientID = process.env.LINKEDIN_CLIENT_ID;
+    const redirectURI = process.env.LINKEDIN_REDIRECT_URI;
+    
+    console.log('🔍 LinkedIn OAuth Configuration Check:');
+    console.log('   LINKEDIN_CLIENT_ID:', clientID ? `✅ Set (${clientID.substring(0, 8)}...)` : '❌ Missing');
+    console.log('   LINKEDIN_REDIRECT_URI:', redirectURI ? `✅ Set (${redirectURI})` : '❌ Missing');
+    
+    if (!clientID || !redirectURI) {
+      console.error('❌ LinkedIn OAuth configuration missing');
+      return res.status(500).json({ error: 'LinkedIn OAuth not configured' });
+    }
+
+    // Generate state for CSRF protection
+    const state = Math.random().toString(36).substring(2, 15);
+    
+    const authUrl = new URL('https://www.linkedin.com/oauth/v2/authorization');
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('client_id', clientID);
+    authUrl.searchParams.set('redirect_uri', redirectURI);
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('scope', 'openid profile email');
+
+    console.log('🔗 Redirecting to LinkedIn OAuth:', authUrl.toString());
+    res.redirect(authUrl.toString());
   }
 
   @Get('linkedin/callback')
