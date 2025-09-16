@@ -3,8 +3,38 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+// Validate required environment variables
+function validateEnvironment() {
+  const requiredVars = [
+    'LINKEDIN_CLIENT_ID',
+    'LINKEDIN_CLIENT_SECRET',
+    'LINKEDIN_REDIRECT_URI',
+    'JWT_SECRET'
+  ];
+
+  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    console.error('❌ Missing required environment variables:');
+    missingVars.forEach(varName => {
+      console.error(`   - ${varName}`);
+    });
+    console.error('\n📝 Please create a .env file in the backend directory with the required variables.');
+    console.error('   See .env.example for reference.');
+    process.exit(1);
+  }
+  
+  console.log('✅ Environment variables validated successfully');
+}
 
 async function bootstrap() {
+  // Validate environment before starting the app
+  validateEnvironment();
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS for frontend
