@@ -39,7 +39,12 @@ export class AuthController {
     const clientID = process.env.TIKTOK_CLIENT_ID;
     const redirectURI = process.env.TIKTOK_REDIRECT_URI;
     
+    console.log('🔍 TikTok OAuth Configuration Check:');
+    console.log('   TIKTOK_CLIENT_ID:', clientID ? `✅ Set (${clientID.substring(0, 8)}...)` : '❌ Missing');
+    console.log('   TIKTOK_REDIRECT_URI:', redirectURI ? `✅ Set (${redirectURI})` : '❌ Missing');
+    
     if (!clientID || !redirectURI) {
+      console.error('❌ TikTok OAuth configuration missing');
       return res.status(500).json({ error: 'TikTok OAuth not configured' });
     }
 
@@ -53,6 +58,7 @@ export class AuthController {
     authUrl.searchParams.set('redirect_uri', redirectURI);
     authUrl.searchParams.set('state', state);
 
+    console.log('🔗 Redirecting to TikTok OAuth:', authUrl.toString());
     res.redirect(authUrl.toString());
   }
 

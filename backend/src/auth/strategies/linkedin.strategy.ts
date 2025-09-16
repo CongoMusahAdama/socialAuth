@@ -27,7 +27,7 @@ export class LinkedInOAuthStrategy extends PassportStrategy(LinkedInStrategy, 'l
       clientID,
       clientSecret,
       callbackURL,
-      scope: ['r_liteprofile', 'r_emailaddress'],
+      scope: ['openid', 'profile', 'email'],
       state: true, // Enable CSRF protection
     });
   }
