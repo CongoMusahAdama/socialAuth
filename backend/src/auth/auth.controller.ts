@@ -31,6 +31,7 @@ export class AuthController {
     authUrl.searchParams.set('client_id', clientID);
     authUrl.searchParams.set('redirect_uri', redirectURI);
     authUrl.searchParams.set('state', state);
+    // Use basic scope for better compatibility
     authUrl.searchParams.set('scope', 'openid profile email');
 
     console.log('🔗 Redirecting to LinkedIn OAuth:', authUrl.toString());
@@ -40,20 +41,26 @@ export class AuthController {
   @Get('linkedin/callback')
   @UseGuards(AuthGuard('linkedin'))
   async linkedinCallback(@Req() req: Request, @Res() res: Response) {
-    const user: User = req.user as User;
-    const loginResult = await this.authService.login(user);
-    
-    // Set httpOnly cookie
-    res.cookie('token', loginResult.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
+    try {
+      const user: User = req.user as User;
+      const loginResult = await this.authService.login(user);
+      
+      // Set httpOnly cookie
+      res.cookie('token', loginResult.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 1000, // 1 hour
+      });
 
-    // Redirect to frontend with success
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/profile?success=true`);
+      // Redirect to frontend with success
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/profile?success=true`);
+    } catch (error) {
+      console.error('LinkedIn callback error:', error);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/?error=linkedin_auth_failed`);
+    }
   }
 
   @Get('tiktok')

@@ -18,6 +18,17 @@ const HomePage: React.FC = () => {
       // Hide success message after 3 seconds
       setTimeout(() => setShowSignupSuccess(false), 3000);
     }
+    
+    // Check for OAuth errors
+    if (typeof window !== 'undefined' && window.location.search.includes('error=')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      if (error === 'linkedin_auth_failed') {
+        alert('LinkedIn authentication failed. Please try again.');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
   }, []);
 
   const checkBackendConnection = async () => {

@@ -60,30 +60,54 @@ export class LinkedInOAuthStrategy extends PassportStrategy(Strategy, 'linkedin'
         return this.fail('No access token received from LinkedIn');
       }
 
-      // Fetch user profile using the new LinkedIn API
-      const profileResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
+      // Fetch user profile using the LinkedIn API
+      // Try the newer userinfo endpoint first, fallback to legacy if needed
+      let profileResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
       });
 
+      let profileData;
+      
       if (!profileResponse.ok) {
-        const errorText = await profileResponse.text();
-        console.error('LinkedIn Profile Error:', profileResponse.status, errorText);
-        return this.fail(`LinkedIn profile fetch failed: ${profileResponse.status}`);
+        console.log('Userinfo endpoint failed, trying legacy profile endpoint...');
+        // Fallback to legacy profile endpoint
+        profileResponse = await fetch('https://api.linkedin.com/v2/people/~:(id,firstName,lastName,emailAddress,profilePicture(displayImage~:playableStreams))', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+        
+        if (!profileResponse.ok) {
+          const errorText = await profileResponse.text();
+          console.error('LinkedIn Profile Error:', profileResponse.status, errorText);
+          return this.fail(`LinkedIn profile fetch failed: ${profileResponse.status}`);
+        }
+        
+        const legacyData = await profileResponse.json();
+        console.log('LinkedIn Legacy Profile Data:', JSON.stringify(legacyData, null, 2));
+        
+        // Transform legacy data to match expected format
+        profileData = {
+          sub: legacyData.id,
+          name: `${legacyData.firstName?.localized?.en_US || ''} ${legacyData.lastName?.localized?.en_US || ''}`.trim(),
+          email: legacyData.emailAddress,
+          picture: legacyData.profilePicture?.displayImage?.elements?.[0]?.identifiers?.[0]?.identifier,
+        };
+      } else {
+        profileData = await profileResponse.json();
+        console.log('LinkedIn Profile Data:', JSON.stringify(profileData, null, 2));
       }
 
-      const profileData = await profileResponse.json();
-      console.log('LinkedIn Profile Data:', JSON.stringify(profileData, null, 2));
-
-      if (!profileData.sub) {
+      if (!profileData.sub && !profileData.id) {
         return this.fail('No user data received from LinkedIn API');
       }
 
       const user = await this.authService.validateOAuthUser({
         provider: 'linkedin',
-        providerId: profileData.sub,
-        name: profileData.name || `${profileData.given_name} ${profileData.family_name}`,
+        providerId: profileData.sub || profileData.id,
+        name: profileData.name || `${profileData.given_name || ''} ${profileData.family_name || ''}`.trim() || 'LinkedIn User',
         email: profileData.email,
         avatar: profileData.picture,
       });
