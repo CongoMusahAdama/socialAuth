@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-custom';
+import { Strategy } from 'passport';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -9,11 +9,11 @@ export class TikTokOAuthStrategy extends PassportStrategy(Strategy, 'tiktok') {
     super();
   }
 
-  async validate(req: any): Promise<any> {
+  async authenticate(req: any): Promise<any> {
     const { code, state } = req.query;
     
     if (!code) {
-      throw new Error('Authorization code not provided');
+      return this.fail('Authorization code not provided');
     }
 
     try {
@@ -22,7 +22,7 @@ export class TikTokOAuthStrategy extends PassportStrategy(Strategy, 'tiktok') {
       const redirectURI = process.env.TIKTOK_REDIRECT_URI;
 
       if (!clientID || !clientSecret || !redirectURI) {
-        throw new Error('TikTok OAuth configuration is incomplete');
+        return this.fail('TikTok OAuth configuration is incomplete');
       }
 
       // Exchange code for access token
@@ -43,7 +43,7 @@ export class TikTokOAuthStrategy extends PassportStrategy(Strategy, 'tiktok') {
       if (!tokenResponse.ok) {
         const errorText = await tokenResponse.text();
         console.error('TikTok Token Error:', tokenResponse.status, errorText);
-        throw new Error(`TikTok token exchange failed: ${tokenResponse.status}`);
+        return this.fail(`TikTok token exchange failed: ${tokenResponse.status}`);
       }
 
       const tokenData = await tokenResponse.json();
@@ -51,7 +51,7 @@ export class TikTokOAuthStrategy extends PassportStrategy(Strategy, 'tiktok') {
 
       const accessToken = tokenData.data?.access_token;
       if (!accessToken) {
-        throw new Error('No access token received from TikTok');
+        return this.fail('No access token received from TikTok');
       }
 
       // Fetch user profile
@@ -64,7 +64,7 @@ export class TikTokOAuthStrategy extends PassportStrategy(Strategy, 'tiktok') {
       if (!profileResponse.ok) {
         const errorText = await profileResponse.text();
         console.error('TikTok Profile Error:', profileResponse.status, errorText);
-        throw new Error(`TikTok profile fetch failed: ${profileResponse.status}`);
+        return this.fail(`TikTok profile fetch failed: ${profileResponse.status}`);
       }
 
       const profileData = await profileResponse.json();
@@ -72,7 +72,7 @@ export class TikTokOAuthStrategy extends PassportStrategy(Strategy, 'tiktok') {
       
       const userData = profileData.data?.user;
       if (!userData) {
-        throw new Error('No user data received from TikTok API');
+        return this.fail('No user data received from TikTok API');
       }
 
       const user = await this.authService.validateOAuthUser({
@@ -83,11 +83,10 @@ export class TikTokOAuthStrategy extends PassportStrategy(Strategy, 'tiktok') {
         avatar: userData.avatar_url,
       });
 
-      return user;
+      return this.success(user);
     } catch (error) {
       console.error('TikTok OAuth Error:', error);
-      throw error;
+      return this.error(error);
     }
   }
-
 }
