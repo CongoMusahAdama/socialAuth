@@ -19,13 +19,16 @@ export class TikTokOAuthStrategy extends PassportStrategy(OAuth2Strategy, 'tikto
     }
 
     super({
-      authorizationURL: 'https://www.tiktok.com/auth/authorize/',
+      authorizationURL: 'https://www.tiktok.com/v2/auth/authorize/',
       tokenURL: 'https://open.tiktokapis.com/v2/oauth/token/',
       clientID,
       clientSecret,
       callbackURL,
       scope: ['user.info.basic'],
       state: true, // Enable CSRF protection
+      customHeaders: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
   }
 
@@ -36,28 +39,44 @@ export class TikTokOAuthStrategy extends PassportStrategy(OAuth2Strategy, 'tikto
     done: Function,
   ): Promise<any> {
     try {
+      console.log('TikTok OAuth - Access token received:', accessToken ? '✅' : '❌');
+      
       // Fetch user profile from TikTok API
       const profileResponse = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name',
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
           },
         }
       );
 
+      if (!profileResponse.ok) {
+        console.error('TikTok API Error:', profileResponse.status, profileResponse.statusText);
+        throw new Error(`TikTok API error: ${profileResponse.status}`);
+      }
+
       const profileData = await profileResponse.json();
+      console.log('TikTok Profile Data:', JSON.stringify(profileData, null, 2));
+      
       const userData = profileData.data?.user;
+
+      if (!userData) {
+        throw new Error('No user data received from TikTok API');
+      }
 
       const user = await this.authService.validateOAuthUser({
         provider: 'tiktok',
-        providerId: userData?.open_id || profile.id,
-        name: userData?.display_name || 'TikTok User',
+        providerId: userData.open_id || userData.union_id || 'unknown',
+        name: userData.display_name || 'TikTok User',
         email: undefined, // TikTok doesn't provide email in basic scope
-        avatar: userData?.avatar_url,
+        avatar: userData.avatar_url,
       });
 
+      console.log('TikTok OAuth - User created successfully:', user.id);
       done(null, user);
     } catch (error) {
+      console.error('TikTok OAuth Error:', error);
       done(error, null);
     }
   }

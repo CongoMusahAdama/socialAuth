@@ -20,3 +20,9 @@ services:
         sync: false
       - key: TIKTOK_CLIENT_SECRET
         sync: false
+      - key: LINKEDIN_REDIRECT_URI
+        sync: false
+      - key: TIKTOK_REDIRECT_URI
+        sync: false
+      - key: FRONTEND_URL
+        value: https://guglex-tapin.netlify.app
